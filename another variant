@@ -1,0 +1,115 @@
+#include <iostream>
+using namespace std;
+
+int** create_matrix(int size);
+void release_matrix(int** a, int size);
+void read_matrix(int** a, int size);
+void print_matrix(int** a, int size);
+
+
+void GetMatr(int** mas, int** p, int i, int j, int m) {
+    int ki, kj, di, dj;
+    di = 0;
+    for (ki = 0; ki < m - 1; ki++) { 
+        if (ki == i) di = 1;
+        dj = 0;
+        for (kj = 0; kj < m - 1; kj++) { 
+            if (kj == j) dj = 1;
+            p[ki][kj] = mas[ki + di][kj + dj];
+        }
+    }
+}
+
+int Determinant(int** mas, int m) 
+{
+    int d = 0, k;
+    int** p = new int* [m];
+    for (int i = 0; i < m; i++)
+        p[i] = new int[m];
+
+    k = 1; 
+    if (m < 1) 
+        cout << "Определитель вычислить невозможно!";
+    if (m == 1) 
+    {
+        d = mas[0][0];
+        return(d);
+    }
+    if (m == 2) 
+    {
+        d = mas[0][0] * mas[1][1] - mas[1][0] * mas[0][1];
+        return d;
+    }
+    if (m > 2) 
+    {
+        for (int i = 0; i < m; i++) 
+        {
+            GetMatr(mas, p, i, 0, m);
+            //print_matrix(p, m - 1);
+            d = d + k * mas[i][0] * Determinant(p, m - 1);
+            k = -k;
+        }
+    }
+    return d;
+}
+
+int main() 
+{
+    setlocale(LC_ALL, "rus");
+
+    int size;
+    cin >> size;
+
+    int** a = create_matrix(size);
+    read_matrix(a, size);
+    print_matrix(a, size);
+
+    int d = Determinant(a, size);
+    cout << "Определитель матрицы равен " << d;
+
+    return 0;
+}
+
+int** create_matrix(int size)
+{
+    int** a = new int* [size];
+    for (int i = 0; i < size; i++)
+    {
+        a[i] = new int[size];
+    }
+
+    return a;
+}
+
+void release_matrix(int** a, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        delete[] a[i];
+    }
+    delete[] a;
+}
+
+void read_matrix(int** a, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            cin >> a[i][j];
+        }
+    }
+}
+
+void print_matrix(int** a, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            cout << a[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
