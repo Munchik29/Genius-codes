@@ -1,0 +1,129 @@
+#include <iostream>
+using namespace std;
+
+double** create_matrix(int size);
+void release_matrix(double** a, int size);
+void read_matrix(double** a, int size);
+void print_matrix(double** a, int size);
+double gaus_det(double** a, int size);
+
+int main()
+{
+    setlocale(LC_ALL, "rus");
+
+    int size;
+    cin >> size;
+
+    double** a = create_matrix(size);
+    read_matrix(a, size);
+    print_matrix(a, size);
+
+    double det = gaus_det(a, size);
+    cout << "Определитель = " << det << endl;
+
+    release_matrix(a, size);
+}
+
+double** create_matrix(int size)
+{
+    double** a = new double* [size];
+    for (int i = 0; i < size; i++)
+    {
+        a[i] = new double[size];
+    }
+
+    return a;
+}
+
+void release_matrix(double** a, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        delete[] a[i];
+    }
+    delete[] a;
+}
+
+void read_matrix(double** a, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            cin >> a[i][j];
+        }
+    }
+}
+
+void print_matrix(double** a, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            cout << a[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
+bool swap_row(double** a, int size, int pos)
+{
+    int row = -1;
+
+    for (int i = pos+1; i < size; i++)
+    {
+        if (a[i][pos] != 0)
+        {
+            row = i;
+            break;
+        }
+    }
+
+    if (row != -1)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            double temp = a[pos][j];
+            a[pos][j] = a[row][j];
+            a[row][j] = temp;
+        }
+    }
+    return row != -1;
+}
+
+double gaus_det(double** a, int size)
+{
+    double det = 1;
+
+    for (int i = 0; i < size; i++)
+    {
+        int k = 1;
+
+        if (a[i][i] == 0)
+        {
+            bool res = swap_row(a, size, i);
+            if (res)
+                k = -1;
+        }
+
+        if (a[i][i] == 0)
+            return 0;
+
+        for (int j = i + 1; j < size; j++)
+        {
+            double b = a[j][i] / a[i][i];
+
+            for (int k = i; k < size; k++)
+            {
+                a[j][k] = a[j][k] - a[i][k] * b;
+            }
+        }
+
+
+        det *= k * a[i][i];
+    }
+
+    return det;
+}
