@@ -1,0 +1,258 @@
+#include <iostream>
+using namespace std;
+
+bool swap_row(double** a, int size, int pos);
+double gaus_det(double** a, int size);
+double** create_matrix(int n, int m);
+void release_matrix(double** a, int n);
+void read_matrix(double** a, int n, int m);
+void print_matrix(double** a, int n, int m);
+double** mult_matrix(double** mas1, int n1, int m1, double** mas2, int n2, int m2, int& n3, int& m3);
+void transpose(double** matrix, int size);
+double** reverse_matrix(double** matrix, int size);
+void minor_matr(double** matr, int n, double** temp_matr, int indRow, int indCol);
+double** copy(double** a, int size);
+
+int main()
+{
+    setlocale(LC_ALL, "rus");
+
+    int type;
+    cin >> type;
+
+    int n1, m1, n2, m2, n3, m3;
+    cin >> n1 >> m1;
+    double** a = create_matrix(n1, m1);
+    read_matrix(a, n1, m1);
+
+    cin >> n2 >> m2;
+    double** b = create_matrix(n2, m2);
+    read_matrix(b, n2, m2);
+
+    double** reverse_a = reverse_matrix(a, n1);
+    if (reverse_a != nullptr)
+    {
+        double** x = nullptr;
+        if (type == 1)
+            x = mult_matrix(reverse_a, n1, m1, b, n2, m2, n3, m3);
+        else
+            x = mult_matrix(b, n1, m1, reverse_a, n2, m2, n3, m3);
+
+        if (x != nullptr)
+            print_matrix(x, n3, m3);
+        else
+            cout << "NO";
+
+        release_matrix(x, n3);
+    }
+    else
+    {
+        cout << "NO";
+    }
+
+    release_matrix(a, n1);
+    release_matrix(b, n2);
+    release_matrix(reverse_a, n1);
+
+}
+
+double** create_matrix(int n, int m)
+{
+    double** a = new double* [n];
+    for (int i = 0; i < n; i++)
+    {
+        a[i] = new double[m];
+    }
+
+    return a;
+}
+
+void release_matrix(double** a, int n)
+{
+    if (a != nullptr)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            delete[] a[i];
+        }
+        delete[] a;
+    }
+}
+
+void read_matrix(double** a, int n, int m)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            cin >> a[i][j];
+        }
+    }
+}
+
+void print_matrix(double** a, int n, int m)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            cout << a[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
+bool swap_row(double** a, int size, int pos)
+{
+    int row = -1;
+
+    for (int i = pos + 1; i < size; i++)
+    {
+        if (a[i][pos] != 0)
+        {
+            row = i;
+            break;
+        }
+    }
+
+    if (row != -1)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            double temp = a[pos][j];
+            a[pos][j] = a[row][j];
+            a[row][j] = temp;
+        }
+    }
+    return row != -1;
+}
+
+double gaus_det(double** a, int size)
+{
+    a = copy(a, size);
+    double det = 1;
+
+    for (int i = 0; i < size; i++)
+    {
+        int k = 1;
+
+        if (a[i][i] == 0)
+        {
+            bool res = swap_row(a, size, i);
+            if (res)
+                k = -1;
+        }
+
+        if (a[i][i] == 0)
+            return 0;
+
+        for (int j = i + 1; j < size; j++)
+        {
+            double b = a[j][i] / a[i][i];
+
+            for (int k = i; k < size; k++)
+            {
+                a[j][k] = a[j][k] - a[i][k] * b;
+            }
+        }
+        det *= k * a[i][i];
+    }
+
+    return det;
+}
+
+double** mult_matrix(double** mas1, int n1, int m1, double** mas2, int n2, int m2, int& n3, int& m3)
+{
+    if (m1 != n2)
+        return nullptr;
+    else
+    {
+        double** mas3 = create_matrix(n1, m2);
+        for (int i = 0; i < n1; i++) {
+            for (int j = 0; j < m2; j++) {
+                mas3[i][j] = 0;
+                for (int k = 0; k < m1; k++)
+                {
+                    mas3[i][j] += mas1[i][k] * mas2[k][j];
+                    if (abs(mas3[i][j]) < 0.000001)
+                        mas3[i][j] = 0;
+                }
+            }
+        }
+
+        n3 = n1;
+        m3 = m2;
+
+        return mas3;
+    }
+}
+
+void transpose(double** matrix, int size)
+{
+    double t;
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = i; j < size; ++j)
+        {
+            t = matrix[i][j];
+            matrix[i][j] = matrix[j][i];
+            matrix[j][i] = t;
+        }
+    }
+}
+
+void minor_matr(double** matr, int n, double** temp_matr, int indRow, int indCol)
+{
+    int ki = 0;
+    for (int i = 0; i < n; i++) {
+        if (i != indRow) {
+            for (int j = 0, kj = 0; j < n; j++) {
+                if (j != indCol) {
+                    temp_matr[ki][kj] = matr[i][j];
+                    kj++;
+                }
+            }
+            ki++;
+        }
+    }
+}
+
+double** copy(double** a, int size)
+{
+    double** b = create_matrix(size, size);
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            b[i][j] = a[i][j];
+        }
+    }
+    return b;
+}
+
+double** reverse_matrix(double** matrix, int size)
+{
+    double det = gaus_det(matrix, size);
+
+    if (det != 0) 
+    {
+        double** obr_matr = create_matrix(size, size);
+
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                int m = size - 1;
+                double** temp_matr = new double* [m];
+                for (int k = 0; k < m; k++)
+                    temp_matr[k] = new double[m];
+                minor_matr(matrix, size, temp_matr, i, j);
+                obr_matr[i][j] = pow(-1, i + j) * gaus_det(temp_matr, m) / det;
+                release_matrix(temp_matr, m);
+            }
+        }
+        transpose(obr_matr, size);
+        return obr_matr;
+    }
+    else
+        return nullptr;
+}
